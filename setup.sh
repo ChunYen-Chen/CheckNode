@@ -53,6 +53,7 @@ if [[ "$CHECK" = "y" || "$CHECK" = "Y" ]] ; then
     echo "# This the command for checking the node information." >> ${BASH_FILE}
     echo $COMMAND >> ${BASH_FILE}
     echo "#====================================================" >> ${BASH_FILE}
+    source ${BASH_FILE}
 else
     printf $RED"The setup is not complete!\n"$WHITE
     exit
