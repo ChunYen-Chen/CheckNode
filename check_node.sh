@@ -154,12 +154,12 @@ fi
 # Main print
 #==============================================================================================================
 # Header of the node 
-printf "==========================================================================================\n"
-printf "Name      State                 Label               "
+printf "===============================================================================================\n"
+printf "Name      State                      Label               "
 if $PRINT_JOB  ; then printf "User            JobID  " ; fi
 if $PRINT_TIME ; then printf "Start time     "         ; fi
 printf "\n"
-printf "==========================================================================================\n"
+printf "===============================================================================================\n"
 
 # loop all the properties one by one
 while read_dom; do
@@ -179,7 +179,7 @@ while read_dom; do
                 
 
                 # 2. node status
-                printf $GREEN"%-22s"$WHITE ${WANTED_VAL[1]}
+                printf $GREEN"%-27s"$WHITE ${WANTED_VAL[1]}
                 
 
                 # 3. node properties
@@ -203,11 +203,11 @@ while read_dom; do
 
             # 2. node status
             if [[ ${WANTED_VAL[1]} = "free" ]] ; then
-                printf $GREEN"%-22s"$WHITE ${WANTED_VAL[1]}
+                printf $GREEN"%-27s"$WHITE ${WANTED_VAL[1]}
             elif [[ ${WANTED_VAL[1]} = "job-exclusive" ]] ; then
-                printf $RED"%-22s"$WHITE ${WANTED_VAL[1]}
+                printf $RED"%-27s"$WHITE ${WANTED_VAL[1]}
             else
-                printf $RED"%-22s"$WHITE ${WANTED_VAL[1]}
+                printf $RED"%-27s"$WHITE ${WANTED_VAL[1]}
             fi
            
 
@@ -236,12 +236,15 @@ while read_dom; do
                 if [[ ${#JOB_USER[@]} = "0" ]] ; then
                     printf "%-15s " $BLANK
                 else
+                    PRINTED=false
                     for i in "${!JOB_USER[@]}"
                     do
+                        if $PRINTED ; then printf "\n %-56s"$BLANK ; fi
                         if $PRINT_JOB ; then printf "%-15s %-6s " ${JOB_LIST[$i]} $i ; fi
                         if $PRINT_TIME ; then
                             printf "%-3s %-2s %-10s " ${JOB_TIME_M[$i]} ${JOB_TIME_D[$i]} ${JOB_TIME_T[$i]}
                         fi
+                        PRINTED=true
                     done
                 fi
             fi    # if $PRINT_JOB || $PRINT_TIME
@@ -262,7 +265,7 @@ while read_dom; do
 
 done < ${DIR}now_stat # while read_dom; do
 
-printf "==========================================================================================\n"
+printf "===============================================================================================\n"
 
 # Print the number of each properties.
 for i in "${!NODE_COUNT[@]}" ; do printf "%-12s " $i                ; done
@@ -270,14 +273,14 @@ printf "\n"
 for i in "${!NODE_COUNT[@]}" ; do printf "%-12s " ${NODE_COUNT[$i]} ; done
 printf "\n"
 
-printf "==========================================================================================\n"
+printf "===============================================================================================\n"
 
 if $PRINT_IDLE ; then
-    printf "==========================================================================================\n"
+    printf "===============================================================================================\n"
     printf "Idle User       JobID  Proc "
     if $PRINT_TIME ; then printf "Start time "; fi 
     printf "\n"
-    printf "==========================================================================================\n"
+    printf "===============================================================================================\n"
     # Print the idle jobs
     for ((i=11+$N_jobs_active; i<11+$N_jobs_active+$N_jobs_idle; i++))
     do 
