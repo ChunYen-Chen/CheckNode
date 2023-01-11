@@ -14,7 +14,7 @@ WHITE='\033[39m'
 
 WORK_DIR=`pwd`
 # 1. write the working directory
-printf "Would you like to user the current directory "$GREEN"(${WORK_DIR}/)"$WHITE" as the working directory?[y/n] "
+printf "Would you like to use the current directory "$GREEN"(${WORK_DIR}/)"$WHITE" as the working directory?[y/n] "
 read USE_PWD
 
 if [[ "${USE_PWD}" = "y" || "$USE_PWD" = "Y" ]] ; then
@@ -48,7 +48,7 @@ read CHECK
 
 
 if [[ "$CHECK" = "y" || "$CHECK" = "Y" ]] ; then
-    echo "directory    ${WORK_DIR}/" > ${WORK_DIR}config
+    echo "directory    ${WORK_DIR}/" > ${WORK_DIR}/config
     echo "#====================================================" >> ${BASH_FILE}
     echo "# This the command for checking the node information." >> ${BASH_FILE}
     echo $COMMAND >> ${BASH_FILE}
