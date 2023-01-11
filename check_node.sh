@@ -2,15 +2,15 @@
 # Array and variables
 #==============================================================================================================
 HOST=`hostname`
-declare -A NODE_COUNT                        # Associative array to store the number of properties of the nodes.
-declare -A JOB_LIST                          # Associative array to store the job id with user.
-declare -A JOB_USER                          # Associative array to store the job user in each node`
-declare -A JOB_TIME_M                        # Associative array to store the month of the job in each node`
-declare -A JOB_TIME_D                        # Associative array to store the day   of the job in each node`
-declare -A JOB_TIME_T                        # Associative array to store the time  of the job in each node`
-WANTED=('name' 'state' 'properties' 'jobs')  # Wanted properties from the xml file.
-WANTED_VAL=()                                # A temporary array to store the values from xml file.
-N_WANTED=${#WANTED[@]}                       # Length of the wanted array.
+declare -A NODE_COUNT                             # Associative array to store the number of properties of the nodes.
+declare -A JOB_LIST                               # Associative array to store the job id with user.
+declare -A JOB_USER                               # Associative array to store the job user in each node`
+declare -A JOB_TIME_M                             # Associative array to store the month of the job in each node`
+declare -A JOB_TIME_D                             # Associative array to store the day   of the job in each node`
+declare -A JOB_TIME_T                             # Associative array to store the time  of the job in each node`
+WANTED=('name' 'state' 'properties' 'jobs' 'np')  # Wanted properties from the xml file.
+WANTED_VAL=()                                     # A temporary array to store the values from xml file.
+N_WANTED=${#WANTED[@]}                            # Length of the wanted array.
 BLANK=""
 
 
@@ -171,6 +171,20 @@ while read_dom; do
     
     # If it the end of the node properties, print out the messages of the node.
     if [[ $ENTITY = "/Node" ]] ; then
+        # count the number of jobs on the node and number of processor is free
+        N_PROC=${WANTED_VAL[4]}
+        temp2=(${WANTED_VAL[3]})
+        for i in "${!temp2[@]}"
+        do
+            temp="${temp2[$i]#*/}"
+            JOB_ID="${temp%.eureka*}"
+            ((JOB_USER[${JOB_ID}]+=1))
+            ((N_PROC-=1))
+        done
+        #echo ${#JOB_USER[@]} $N_PROC
+        #if [[ ${#JOB_USER[@]} != "0" && ${WANTED_VAL[1]} = "free" ]] ; then WANTED_VAL[1]="P-free" ; fi
+        
+
         # only print free node
         if $PRINT_FREE ; then
             if [[ ${WANTED_VAL[1]} = "free" ]] ; then
@@ -179,7 +193,11 @@ while read_dom; do
                 
 
                 # 2. node status
-                printf $GREEN"%-27s"$WHITE ${WANTED_VAL[1]}
+                if [[ "$N_PROC" = "${WANTED_VAL[4]}" ]] ; then
+                    printf $GREEN"%-27s"$WHITE ${WANTED_VAL[1]}
+                else
+                    printf $ORANGE"%-4s(%02d/%02d)%-16s"$WHITE ${WANTED_VAL[1]} $N_PROC ${WANTED_VAL[4]} $BLANK
+                fi
                 
 
                 # 3. node properties
@@ -188,11 +206,32 @@ while read_dom; do
                 else
                     printf "%-20s" ${WANTED_VAL[2]}
                 fi
-                printf "\n"
                 
                 # Count the number of properties.
                 PROP=`sep_string ${WANTED_VAL[2]}`
                 for name in $PROP ; do ((NODE_COUNT[$name]+=1)) ; done
+               
+                
+                # 4. print user, job id, and time
+                if $PRINT_JOB || $PRINT_TIME ; then
+                    if [[ ${#JOB_USER[@]} = "0" ]] ; then
+                        printf "%-15s " $BLANK
+                    else
+                        PRINTED=false
+                        for i in "${!JOB_USER[@]}"
+                        do
+                            if $PRINTED ; then printf "\n %-56s"$BLANK ; fi
+                            if $PRINT_JOB ; then printf "%-15s %-6s " ${JOB_LIST[$i]} $i ; fi
+                            if $PRINT_TIME ; then
+                                printf "%-3s %-2s %-10s " ${JOB_TIME_M[$i]} ${JOB_TIME_D[$i]} ${JOB_TIME_T[$i]}
+                            fi
+                            PRINTED=true
+                        done
+                    fi
+
+                fi # if $PRINT_JOB || $PRINT_TIME ; then
+
+                printf "\n"
 
             fi    # if [[ ${WANTED_VAL[1]} = "free" ]]
         # print all node
@@ -203,7 +242,11 @@ while read_dom; do
 
             # 2. node status
             if [[ ${WANTED_VAL[1]} = "free" ]] ; then
-                printf $GREEN"%-27s"$WHITE ${WANTED_VAL[1]}
+                if [[ "$N_PROC" = "${WANTED_VAL[4]}" ]] ; then
+                    printf $GREEN"%-27s"$WHITE ${WANTED_VAL[1]}
+                else
+                    printf $ORANGE"%-4s(%02d/%02d)%-16s"$WHITE ${WANTED_VAL[1]} $N_PROC ${WANTED_VAL[4]} $BLANK
+                fi
             elif [[ ${WANTED_VAL[1]} = "job-exclusive" ]] ; then
                 printf $RED"%-27s"$WHITE ${WANTED_VAL[1]}
             else
@@ -225,14 +268,6 @@ while read_dom; do
 
             # 4. print user, job id, and time
             if $PRINT_JOB || $PRINT_TIME ; then
-                temp=(${WANTED_VAL[3]})
-                for i in "${!temp[@]}"
-                do
-                    temp="${temp[$i]#*/}"
-                    JOB_ID="${temp%.eureka*}"
-                    ((JOB_USER[${JOB_ID}]+=1))
-                done
-                
                 if [[ ${#JOB_USER[@]} = "0" ]] ; then
                     printf "%-15s " $BLANK
                 else
