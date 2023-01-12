@@ -1,5 +1,6 @@
 # First time
-1. Run the setup.sh with command `sh setup.sh`.
+1. Setup by command `sh setup.sh`.
+2. Run the command `source ~/.bashrc`.
 
 # Options
 * `f` : Only list the free node.
@@ -13,4 +14,4 @@ The followings can only work on eureka00.
 
 # Note
 1. The option `q` does not work with other options. 
-2. 
+2. The default `.bashrc` file location is under `~/` or `/home/<USER>/`.
