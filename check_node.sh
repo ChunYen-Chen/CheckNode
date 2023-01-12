@@ -50,8 +50,8 @@ sep_string () {
 #==============================================================================================================
 # Initialize
 #==============================================================================================================
-DIR=`sed "1q;d" config`
-DIR=$(echo ${DIR} | awk '{print $2}')    # The directory of this file.
+DIR=$0
+DIR=${DIR%"check_node.sh"}                # The directory of this file.
 PRINT_FREE=false                         # Option "f": print the free nodes
 PRINT_SHOWQ=false                        # Option "q": print the "showq"
 PRINT_JOB=false                          # Option "j": print the job ID and the job user
@@ -334,3 +334,8 @@ if $PRINT_IDLE ; then
     
     done
 fi   # if $PRINT_IDLE
+
+#rm ${DIR}now_stat
+#if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
+#    rm ${DIR}now_list
+#fi
