@@ -1,8 +1,7 @@
 #==============================================================================================================
 # Array and variables
 #==============================================================================================================
-#HOST=`hostname`
-HOST="eureka00"
+HOST=`hostname`
 declare -A NODE_COUNT                             # Associative array to store the number of properties of the nodes.
 declare -A JOB_LIST                               # Associative array to store the job id with user.
 declare -A JOB_USER                               # Associative array to store the job user in each node`
@@ -180,11 +179,11 @@ if [[ $PRINT_LENGTH < 61 ]] ; then PRINT_LENGTH=61 ; fi
 # Prepare needed data
 #==============================================================================================================
 # Get the statisic of the cluster in xml style.
-#pbsnodes -x > ${DIR}now_stat
+pbsnodes -x > ${DIR}now_stat
 
 if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
     # Get the current job list
-    #showq > ${DIR}now_list 
+    showq > ${DIR}now_list 
     
     temp=`tail -n 1 ${DIR}now_list`
     temp=($temp)
