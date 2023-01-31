@@ -16,6 +16,8 @@ BLANK=""
 BASE_LENGTH=$(( ${WANTED_SPACE[0]} + ${WANTED_SPACE[1]} + ${WANTED_SPACE[2]} ))
 PRINT_LENGTH=$BASE_LENGTH
 
+
+
 #==============================================================================================================
 # Colors: "\033[" + "<0 or 1, meaning normal or bold>;" + "<color code>" + "m"
 #==============================================================================================================
@@ -34,6 +36,32 @@ WHITE='\033[39m'
 #==============================================================================================================
 # Functions
 #==============================================================================================================
+display_help() {
+    # Help the user to use this script
+    echo "The script to list the current cluster information of each node."
+    echo 
+    echo "Usage: sh checknode.sh [a|f|i|j|q|t] [-h]"
+    echo 
+    echo "Examples: "
+    echo "1. sh checknode.sh f"
+    echo "2. sh checknode.sh ij"
+    echo 
+    echo "Arguements and Options: "
+    echo "-h : Display the help messages."
+    echo "a  : Equivalent to the options of 'ijt'."
+    echo "f  : Only display the free nodes."
+    echo "i  : Display the idle users at the bottom."
+    echo "j  : Display with the job ID and the job users of each node."
+    echo "q  : Display the message from 'showq'."
+    echo "t  : Display with the starting time information."
+    echo 
+    echo "Note: "
+    echo "1. The option 'q' does not work with other options."
+    echo "2. The option 'q' can only work on 'eureka00'."
+    echo "3. The order of the options does not matter. e.g. 'ij' is equivalent to 'ji'."
+    echo 
+}
+
 read_dom () {
     # Read the xml file to get the properties(ENTITY) and value(CONTENT).
     local IFS=\>
@@ -104,9 +132,23 @@ print_separate_line () {
     printf "\n"
 }
 
+
+
 #==============================================================================================================
 # Initialize
 #==============================================================================================================
+# Get the options
+while getopts ":hn:" option; do
+    case $option in
+        h) # display Help
+            display_help
+            exit;;
+        \?) # Invalid option
+            echo "Error: Invalid option"
+            exit;;
+    esac
+done
+
 DIR=$0
 DIR=${DIR%"check_node.sh"}                # The directory of this file.
 PRINT_FREE=false                         # Option "f": print the free nodes
@@ -175,6 +217,8 @@ fi
 # to match the length of the node properties
 if [[ $PRINT_LENGTH < 61 ]] ; then PRINT_LENGTH=61 ; fi
 
+
+
 #==============================================================================================================
 # Prepare needed data
 #==============================================================================================================
@@ -211,6 +255,7 @@ if $PRINT_SHOWQ ; then
     cat ${DIR}now_list 
     exit
 fi
+
 
 
 #==============================================================================================================
