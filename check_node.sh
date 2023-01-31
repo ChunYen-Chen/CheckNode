@@ -17,15 +17,6 @@ BLANK=""
 BASE_LENGTH=$(( ${WANTED_SPACE[0]} + ${WANTED_SPACE[1]} + ${WANTED_SPACE[2]} ))
 PRINT_LENGTH=$BASE_LENGTH
 
-# The temporary files to store the output from the `pbsnodes` and `showq`.
-temp_list=$(mktemp /tmp/list_${USER}.XXXXX)
-#exec 3>"${temp_list}"
-#exec 4<"${temp_list}"
-
-temp_stat=$(mktemp /tmp/stat_${USER}.XXXXX)
-#exec 5>"${temp_stat}"
-#exec 6<"${temp_stat}"
-
 
 
 #==============================================================================================================
@@ -155,24 +146,36 @@ print_separate_line () {
 # Initialize
 #==============================================================================================================
 # Get the options
-while getopts ":h:" option; do
+while getopts ":h" option; do
     case $option in
         h) # display Help
             display_help
-            clean_exit;;
+            exit;;
         \?) # Invalid option
             echo "Error: Invalid option"
-            clean_exit;;
+            exit;;
     esac
 done
 
+
 DIR=$0
 DIR=${DIR%"check_node.sh"}                # The directory of this file.
-PRINT_FREE=false                         # Option "f": print the free nodes
-PRINT_SHOWQ=false                        # Option "q": print the "showq"
-PRINT_JOB=false                          # Option "j": print the job ID and the job user
-PRINT_IDLE=false                         # Option "i": print the idle users
-PRINT_TIME=false                         # Option "t": print the time of each job
+PRINT_FREE=false                          # Option "f": print the free nodes
+PRINT_SHOWQ=false                         # Option "q": print the "showq"
+PRINT_JOB=false                           # Option "j": print the job ID and the job user
+PRINT_IDLE=false                          # Option "i": print the idle users
+PRINT_TIME=false                          # Option "t": print the time of each job
+
+
+# The temporary files to store the output from the `pbsnodes` and `showq`.
+temp_list=$(mktemp /tmp/list_${USER}.XXXXX)
+#exec 3>"${temp_list}"
+#exec 4<"${temp_list}"
+
+temp_stat=$(mktemp /tmp/stat_${USER}.XXXXX)
+#exec 5>"${temp_stat}"
+#exec 6<"${temp_stat}"
+
 
 # print free nodes
 if [[ ${1} == *"f"* ]] ; then PRINT_FREE=true ; fi
