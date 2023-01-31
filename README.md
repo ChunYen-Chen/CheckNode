@@ -3,6 +3,7 @@
 2. Run the command `source ~/.bashrc`.
 
 # Options
+* `-h`: Display the help messages.
 * `f` : Only list the free node.
 
 The followings can only work on eureka00.
