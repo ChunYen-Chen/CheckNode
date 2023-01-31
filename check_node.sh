@@ -72,6 +72,13 @@ display_help() {
     echo 
 }
 
+clean_exit () {
+    # Remove the temporary files then exit
+    rm "${temp_list}"
+    rm "${temp_stat}"
+    exit
+}
+
 read_dom () {
     # Read the xml file to get the properties(ENTITY) and value(CONTENT).
     local IFS=\>
@@ -152,10 +159,10 @@ while getopts ":h:" option; do
     case $option in
         h) # display Help
             display_help
-            exit;;
+            clean_exit;;
         \?) # Invalid option
             echo "Error: Invalid option"
-            exit;;
+            clean_exit;;
     esac
 done
 
@@ -240,7 +247,7 @@ if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
     showq > ${temp_list}
 
     # only print the showq message
-    if $PRINT_SHOWQ ; then cat ${temp_list} ; exit; fi
+    if $PRINT_SHOWQ ; then cat ${temp_list} ; clean_exit; fi
     
     temp=`tail -n 1 ${temp_list}`
     temp=($temp)
@@ -387,10 +394,7 @@ if $PRINT_IDLE ; then
     done
 fi   # if $PRINT_IDLE
 
-
-# Remove the temporary files.
-rm "${temp_list}"
-rm "${temp_stat}"
+clean_exit
 #exec 3>&-
 #exec 5>&-
 
