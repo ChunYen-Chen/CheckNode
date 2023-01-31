@@ -2,6 +2,7 @@
 # Array and variables
 #==============================================================================================================
 HOST=`hostname`
+USER=`whoami`
 declare -A NODE_COUNT                             # Associative array to store the number of properties of the nodes.
 declare -A JOB_LIST                               # Associative array to store the job id with user.
 declare -A JOB_USER                               # Associative array to store the job user in each node`
@@ -15,6 +16,15 @@ N_WANTED=${#WANTED[@]}                            # Length of the wanted array.
 BLANK=""
 BASE_LENGTH=$(( ${WANTED_SPACE[0]} + ${WANTED_SPACE[1]} + ${WANTED_SPACE[2]} ))
 PRINT_LENGTH=$BASE_LENGTH
+
+# The temporary files to store the output from the `pbsnodes` and `showq`.
+temp_list=$(mktemp /tmp/list_${USER}.XXXXX)
+#exec 3>"${temp_list}"
+#exec 4<"${temp_list}"
+
+temp_stat=$(mktemp /tmp/stat_${USER}.XXXXX)
+#exec 5>"${temp_stat}"
+#exec 6<"${temp_stat}"
 
 
 
@@ -163,7 +173,7 @@ if [[ ${1} == *"f"* ]] ; then PRINT_FREE=true ; fi
 # print the original showq
 if [[ ${1} == *"q"* ]] ; then 
     if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: We can only use 'q' option on eureka00.\n"${WHITE}
+        printf ${RED}"ERROR: The option 'q' is only supported on eureka00.\n"${WHITE}
     else
         if [[  ${1} != "q" ]] ; then
             printf ${RED}"WARNING: We will only print out the content of 'showq'.\n"${WHITE}
@@ -175,7 +185,7 @@ fi
 # print the jobs of each node 
 if [[ ${1} == *"j"* ]] ; then 
     if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: We can only use 'j' option on eureka00.\n"${WHITE}
+        printf ${RED}"ERROR: The option 'j' is only supported on eureka00.\n"${WHITE}
     else
         PRINT_JOB=true
         ((PRINT_LENGTH+=${WANTED_SPACE[3]}))
@@ -185,7 +195,7 @@ fi
 # print the idle user jobs
 if [[ ${1} == *"i"* ]] ; then 
     if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: We can only use 'i' option on eureka00.\n"${WHITE}
+        printf ${RED}"ERROR: The option 'i' is only supported on eureka00.\n"${WHITE}
     else
         PRINT_IDLE=true
     fi
@@ -194,7 +204,7 @@ fi
 # print the start time
 if [[ ${1} == *"t"* ]] ; then 
     if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: We can only use 't' option on eureka00.\n"${WHITE}
+        printf ${RED}"ERROR: The option 't' is only supported on eureka00.\n"${WHITE}
     else
         PRINT_TIME=true
         ((PRINT_LENGTH+=${WANTED_SPACE[4]}))
@@ -204,7 +214,7 @@ fi
 # print all details
 if [[ ${1} == *"a"* ]] ; then 
     if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: We can only use 'a' option on eureka00.\n"${WHITE}
+        printf ${RED}"ERROR: The option 'a' is only supported on eureka00.\n"${WHITE}
     else
         PRINT_JOB=true
         PRINT_IDLE=true
@@ -223,20 +233,23 @@ if [[ $PRINT_LENGTH < 61 ]] ; then PRINT_LENGTH=61 ; fi
 # Prepare needed data
 #==============================================================================================================
 # Get the statisic of the cluster in xml style.
-pbsnodes -x > ${DIR}now_stat
+pbsnodes -x > ${temp_stat}
 
 if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
     # Get the current job list
-    showq > ${DIR}now_list 
+    showq > ${temp_list}
+
+    # only print the showq message
+    if $PRINT_SHOWQ ; then cat ${temp_list} ; exit; fi
     
-    temp=`tail -n 1 ${DIR}now_list`
+    temp=`tail -n 1 ${temp_list}`
     temp=($temp)
     N_jobs_active=${temp[5]}
     N_jobs_idle=${temp[8]}
     
     for ((i=4; i<4+$N_jobs_active; i++))
     do 
-      job=`sed "${i}q;d" ${DIR}now_list`
+      job=`sed "${i}q;d" ${temp_list}`
       job=($job)
       ID=(${job[0]})
       NAME=(${job[1]})
@@ -250,11 +263,6 @@ if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
     done
 fi
 
-# only print the showq message
-if $PRINT_SHOWQ ; then
-    cat ${DIR}now_list 
-    exit
-fi
 
 
 
@@ -295,8 +303,6 @@ while read_dom; do
             ((JOB_USER[${JOB_ID}]+=1))
             ((N_PROC-=1))
         done
-        #echo ${#JOB_USER[@]} $N_PROC
-        #if [[ ${#JOB_USER[@]} != "0" && ${WANTED_VAL[1]} = "free" ]] ; then WANTED_VAL[1]="P-free" ; fi
         
         # 1. node name
         print_name ${WANTED_VAL[0]}
@@ -341,7 +347,7 @@ while read_dom; do
     # Break the loop when it reach the end of the file.
     if [[ $ENTITY = "/Data" ]] ; then break ; fi
 
-done < ${DIR}now_stat # while read_dom; do
+done < ${temp_stat} # while read_dom; do
 
 # Print the number of each properties.
 print_separate_line $PRINT_LENGTH
@@ -365,7 +371,7 @@ if $PRINT_IDLE ; then
     
     for ((i=11+$N_jobs_active; i<11+$N_jobs_active+$N_jobs_idle; i++))
     do 
-      job=`sed "${i}q;d" ${DIR}now_list`
+      job=`sed "${i}q;d" ${temp_list}`
       job=($job)
       ID=(${job[0]})
       NAME=(${job[1]})
@@ -381,7 +387,10 @@ if $PRINT_IDLE ; then
     done
 fi   # if $PRINT_IDLE
 
-#rm ${DIR}now_stat
-#if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
-#    rm ${DIR}now_list
-#fi
+
+# Remove the temporary files.
+rm "${temp_list}"
+rm "${temp_stat}"
+#exec 3>&-
+#exec 5>&-
+
