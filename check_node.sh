@@ -138,7 +138,7 @@ print_separate_line () {
 # Initialize
 #==============================================================================================================
 # Get the options
-while getopts ":hn:" option; do
+while getopts ":h:" option; do
     case $option in
         h) # display Help
             display_help
