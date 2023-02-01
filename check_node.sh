@@ -58,7 +58,7 @@ display_help() {
     echo 
     echo "Note: "
     echo "1. The option 'q' does not work with other options."
-    echo "2. The option 'q' can only work on 'eureka00'."
+    echo "2. The options 'a', 'i', 'j', 't', 'q' can only work on 'eureka00'."
     echo "3. The order of the options does not matter. e.g. 'ij' is equivalent to 'ji'."
     echo 
 }
