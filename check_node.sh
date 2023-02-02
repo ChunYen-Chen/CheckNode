@@ -16,6 +16,7 @@ N_WANTED=${#WANTED[@]}                            # Length of the wanted array.
 BLANK=""
 BASE_LENGTH=$(( ${WANTED_SPACE[0]} + ${WANTED_SPACE[1]} + ${WANTED_SPACE[2]} ))
 PRINT_LENGTH=$BASE_LENGTH
+DEBUG=false
 
 
 
@@ -41,20 +42,22 @@ display_help() {
     # Help the user to use this script
     echo "The script to list the current cluster information of each node."
     echo 
-    echo "Usage: sh checknode.sh [a|f|i|j|q|t] [-h]"
+    echo "Usage: sh checknode.sh [-a|f|h|i|j|q|t]"
     echo 
     echo "Examples: "
-    echo "1. sh checknode.sh f"
-    echo "2. sh checknode.sh ij"
+    echo "1. sh checknode.sh -f"
+    echo "2. sh checknode.sh -ij"
     echo 
     echo "Arguements and Options: "
     echo "-h : Display the help messages."
-    echo "a  : Equivalent to the options of 'ijt'."
-    echo "f  : Only display the free nodes."
-    echo "i  : Display the idle users at the bottom."
-    echo "j  : Display with the job ID and the job users of each node."
-    echo "q  : Display the message from 'showq'."
-    echo "t  : Display with the starting time information."
+    echo "-a : Equivalent to the options of 'ijt'."
+    echo "-f : Only display the free nodes."
+    echo "-i : Display the idle users at the bottom."
+    echo "-j : Display with the job ID and the job users of each node."
+    echo "-q : Display the message from 'showq'."
+    echo "-t : Display with the starting time information."
+    echo "-u : Only display the specific user. (Not ready yet!!!)"
+    echo "-s : Only display the specific job id. (Not ready yet!!!)"
     echo 
     echo "Note: "
     echo "1. The option 'q' does not work with other options."
@@ -145,19 +148,6 @@ print_separate_line () {
 #==============================================================================================================
 # Initialize
 #==============================================================================================================
-# Get the options
-while getopts ":h" option; do
-    case $option in
-        h) # display Help
-            display_help
-            exit;;
-        \?) # Invalid option
-            echo "Error: Invalid option"
-            exit;;
-    esac
-done
-
-
 DIR=$0
 DIR=${DIR%"check_node.sh"}                # The directory of this file.
 PRINT_FREE=false                          # Option "f": print the free nodes
@@ -165,6 +155,75 @@ PRINT_SHOWQ=false                         # Option "q": print the "showq"
 PRINT_JOB=false                           # Option "j": print the job ID and the job user
 PRINT_IDLE=false                          # Option "i": print the idle users
 PRINT_TIME=false                          # Option "t": print the time of each job
+PRINT_SEL_ID=false                        # Option "s": print the selected id
+PRINT_SEL_USER=false                      # Option "u": print the selected user
+
+
+# Get the options
+while getopts ":hafijtqu:n:" option; do
+    case $option in
+        h) # display Help
+            display_help
+            exit
+            ;;
+        a) # print all details
+            if [[ $HOST != 'eureka00' ]] ; then
+                printf ${RED}"ERROR: The option 'a' is only supported on eureka00.\n"${WHITE}
+            else
+                PRINT_JOB=true
+                PRINT_IDLE=true
+                PRINT_TIME=true
+            fi
+            ;;
+        f) # print free nodes
+            PRINT_FREE=true
+            ;;
+        i) # print the idle user jobs
+            if [[ $HOST != 'eureka00' ]] ; then
+                printf ${RED}"ERROR: The option 'i' is only supported on eureka00.\n"${WHITE}
+            else
+                PRINT_IDLE=true
+            fi
+            ;;
+        j) # print the jobs of each node 
+            if [[ $HOST != 'eureka00' ]] ; then
+                printf ${RED}"ERROR: The option 'j' is only supported on eureka00.\n"${WHITE}
+            else
+                PRINT_JOB=true
+            fi
+            ;;
+        t) # print the start time
+            if [[ $HOST != 'eureka00' ]] ; then
+                printf ${RED}"ERROR: The option 't' is only supported on eureka00.\n"${WHITE}
+            else
+                PRINT_TIME=true
+            fi
+            ;;
+        q) # print the original showq
+            if [[ $HOST != 'eureka00' ]] ; then
+                printf ${RED}"ERROR: The option 'q' is only supported on eureka00.\n"${WHITE}
+            else
+                PRINT_SHOWQ=true
+            fi
+            ;;
+        u) # select sepcific user
+            PRINT_SEL_USER=true
+            arg_test="$OPTARG"
+            echo "This arument is not ready yet." $arg_test
+            exit
+            ;;
+        s) # select sepcific job id
+            PRINT_SEL_ID=true
+            SEL_ID="$OPTARG"
+            echo "This arument is not ready yet." $arg_test
+            exit
+            ;;
+        \?) # Invalid option
+            echo "Error: Invalid option"
+            exit
+            ;;
+    esac
+done   # while getopts
 
 
 # The temporary files to store the output from the `pbsnodes` and `showq`.
@@ -176,66 +235,19 @@ temp_stat=$(mktemp /tmp/stat_${USER}.XXXXX)
 #exec 5>"${temp_stat}"
 #exec 6<"${temp_stat}"
 
+# count the separate line length
+if $PRINT_JOB  ; then ((PRINT_LENGTH+=${WANTED_SPACE[3]})) ; fi
+if $PRINT_TIME ; then ((PRINT_LENGTH+=${WANTED_SPACE[4]})) ; fi
 
-# print free nodes
-if [[ ${1} == *"f"* ]] ; then PRINT_FREE=true ; fi
+# to match the minmum length of the node properties
+if [[ $PRINT_LENGTH -lt 61 ]] ; then PRINT_LENGTH=61 ; fi
 
-# print the original showq
-if [[ ${1} == *"q"* ]] ; then 
-    if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: The option 'q' is only supported on eureka00.\n"${WHITE}
-    else
-        if [[  ${1} != "q" ]] ; then
-            printf ${RED}"WARNING: We will only print out the content of 'showq'.\n"${WHITE}
-        fi
-        PRINT_SHOWQ=true
-    fi
+
+# if debug mode overwrite the "temp_list" and "temp_stat"
+if $DEBUG ; then
+    temp_list="now_list"
+    temp_stat="now_stat"
 fi
-
-# print the jobs of each node 
-if [[ ${1} == *"j"* ]] ; then 
-    if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: The option 'j' is only supported on eureka00.\n"${WHITE}
-    else
-        PRINT_JOB=true
-        ((PRINT_LENGTH+=${WANTED_SPACE[3]}))
-    fi
-fi
-
-# print the idle user jobs
-if [[ ${1} == *"i"* ]] ; then 
-    if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: The option 'i' is only supported on eureka00.\n"${WHITE}
-    else
-        PRINT_IDLE=true
-    fi
-fi
-
-# print the start time
-if [[ ${1} == *"t"* ]] ; then 
-    if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: The option 't' is only supported on eureka00.\n"${WHITE}
-    else
-        PRINT_TIME=true
-        ((PRINT_LENGTH+=${WANTED_SPACE[4]}))
-    fi
-fi
-
-# print all details
-if [[ ${1} == *"a"* ]] ; then 
-    if [[ $HOST != 'eureka00' ]] ; then
-        printf ${RED}"ERROR: The option 'a' is only supported on eureka00.\n"${WHITE}
-    else
-        PRINT_JOB=true
-        PRINT_IDLE=true
-        PRINT_TIME=true
-        ((PRINT_LENGTH+=${WANTED_SPACE[3]}))
-        ((PRINT_LENGTH+=${WANTED_SPACE[4]}))
-    fi
-fi
-
-# to match the length of the node properties
-if [[ $PRINT_LENGTH < 61 ]] ; then PRINT_LENGTH=61 ; fi
 
 
 
@@ -250,7 +262,13 @@ if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
     showq > ${temp_list}
 
     # only print the showq message
-    if $PRINT_SHOWQ ; then cat ${temp_list} ; clean_exit; fi
+    if $PRINT_SHOWQ ; then 
+        if $PRINT_FREE || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
+            printf ${RED}"WARNING: We will only print out the content of 'showq'.\n"${WHITE}
+        fi
+        cat ${temp_list}
+        clean_exit
+    fi
     
     temp=`tail -n 1 ${temp_list}`
     temp=($temp)
@@ -305,14 +323,25 @@ while read_dom; do
         
         # count the number of jobs on the node and number of processor is free
         N_PROC=${WANTED_VAL[4]}
-        temp2=(${WANTED_VAL[3]})
+        temp=(${WANTED_VAL[3]})
         for i in "${!temp2[@]}"
         do
-            temp="${temp2[$i]#*/}"
-            JOB_ID="${temp%.eureka*}"
+            temp2="${temp[$i]#*/}"
+            JOB_ID="${temp2%.eureka*}"
             ((JOB_USER[${JOB_ID}]+=1))
             ((N_PROC-=1))
         done
+
+        # only print the selected user or job id
+        if $PRINT_SEL_ID ; then 
+            WANTED_VAL=() 
+            continue
+        fi
+        
+        if $PRINT_SEL_USER ; then 
+            WANTED_VAL=() 
+            continue
+        fi
         
         # 1. node name
         print_name ${WANTED_VAL[0]}
