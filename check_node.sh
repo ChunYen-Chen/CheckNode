@@ -324,7 +324,7 @@ while read_dom; do
         # count the number of jobs on the node and number of processor is free
         N_PROC=${WANTED_VAL[4]}
         temp=(${WANTED_VAL[3]})
-        for i in "${!temp2[@]}"
+        for i in "${!temp[@]}"
         do
             temp2="${temp[$i]#*/}"
             JOB_ID="${temp2%.eureka*}"
