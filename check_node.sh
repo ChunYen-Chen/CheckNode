@@ -420,9 +420,9 @@ while read_dom; do
                 PRINTED=false
                 for i in "${!JOB_USER[@]}"
                 do
-                    if $PRINTED ; then printf "\n%-${BASE_LENGTH}s" $BLANK ; fi
                     if $PRINT_SEL_USER && [[ $SEL_USER != ${JOB_LIST[$i]} ]] ; then continue ; fi
                     if $PRINT_SEL_ID   && [[ $SEL_ID   != $i              ]] ; then continue ; fi
+                    if $PRINTED ; then printf "\n%-${BASE_LENGTH}s" $BLANK ; fi
                     if $PRINT_JOB ; then print_job ${JOB_LIST[$i]} $i ; fi
                     if $PRINT_TIME ; then
                         print_time ${JOB_TIME_M[$i]} ${JOB_TIME_D[$i]} ${JOB_TIME_T[$i]}
