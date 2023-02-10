@@ -15,7 +15,9 @@
 * `-d`         : Only list the down nodes.
 * `-o`         : Only list the offline nodes.
 * `-s <jobId>` : Only display the specific job id.
+
 The followings can only work on eureka00.
+
 * `-i`         : List the idle users.
 * `-j`         : List the job ID and job user of each node.
 * `-t`         : List the start time of each job.
