@@ -10,19 +10,20 @@
 2. `sh checknode.sh -ij`
 
 # Options
-* `-h`: Display the help messages.
-* `-f` : Only list the free nodes.
-* `-d` : Only list the down nodes.
-* `-o` : Only list the offline nodes.
-* `-s` : Only display the specific job id.
-
+* `-h`         : Display the help messages.
+* `-f`         : Only list the free nodes.
+* `-d`         : Only list the down nodes.
+* `-o`         : Only list the offline nodes.
+* `-s <jobId>` : Only display the specific job id.
 The followings can only work on eureka00.
-* `-i` : List the idle users.
-* `-j` : List the job ID and job user of each node.
-* `-t` : List the start time of each job.
-* `-a` : List the content with option `i`, `j`, and `t`.
-* `-q` : List the "showq" content.
-* `-u` : Only display the specific user.
+* `-i`         : List the idle users.
+* `-j`         : List the job ID and job user of each node.
+* `-t`         : List the start time of each job.
+* `-a`         : List the content with option `i`, `j`, and `t`.
+* `-q`         : List the "showq" content.
+* `-u <user>`  : Only display the specific user.
+* `-l <label>` : Only display the specific user.
+
 
 # Note
 1. The option `q` does not work with other options. 
