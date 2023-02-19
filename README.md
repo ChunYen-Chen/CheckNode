@@ -11,6 +11,7 @@
 
 # Options
 * `-h`         : Display the help messages.
+* `-v`         : Display the version.
 * `-f`         : Only list the free nodes.
 * `-d`         : Only list the down nodes.
 * `-o`         : Only list the offline nodes.

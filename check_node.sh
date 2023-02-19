@@ -1,4 +1,14 @@
 #==============================================================================================================
+# This is the simple code for getting the cluster information without root. 
+#
+# Source code : https://github.com/ChunYen-Chen/CheckNode
+# Version     : 1.0.0
+#
+#==============================================================================================================
+
+
+
+#==============================================================================================================
 # Array and variables
 #==============================================================================================================
 HOST=`hostname`
@@ -10,7 +20,7 @@ declare -A JOB_TIME_M                             # Associative array to store t
 declare -A JOB_TIME_D                             # Associative array to store the day   of the job in each node`
 declare -A JOB_TIME_T                             # Associative array to store the time  of the job in each node`
 WANTED=('name' 'state' 'properties' 'jobs' 'np')  # Wanted properties from the xml file.
-WANTED_SPACE=(10 27 20 22 16)
+WANTED_SPACE=(10 27 20 22 16)                     # Wanted properties print space.
 WANTED_VAL=()                                     # A temporary array to store the values from xml file.
 N_WANTED=${#WANTED[@]}                            # Length of the wanted array.
 BLANK=""
@@ -51,6 +61,7 @@ display_help() {
     echo 
     echo "Arguements: "
     echo "-h         : Display the help messages."
+    echo "-v         : Display the version."
     echo "-d         : Only display the down nodes."
     echo "-f         : Only display the free nodes."
     echo "-o         : Only display the offline nodes."
@@ -174,11 +185,15 @@ PRINT_SEL_LABEL=false                     # Option "l": print the selected label
 
 
 # Get the options
-while getopts ":hadfijtioqu:s:l:" option; do
+while getopts ":hvadfijtoqu:s:l:" option; do
 
     case $option in
         h) # display Help
             display_help
+            exit
+            ;;
+        v) # display version
+            echo "CheckNode 1.0.0"
             exit
             ;;
         a) # print all details
