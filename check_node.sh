@@ -2,7 +2,7 @@
 # This is the simple code for getting the cluster information without root. 
 #
 # Source code : https://github.com/ChunYen-Chen/CheckNode
-# Version     : 1.0.0
+# Version     : 1.1.0
 #
 #==============================================================================================================
 
@@ -13,13 +13,14 @@
 #==============================================================================================================
 HOST=`hostname`
 USER=`whoami`
+NODE_ID=${HOST:(-2)}
 declare -A NODE_COUNT                             # Associative array to store the number of labels of the nodes.
 declare -A JOB_LIST                               # Associative array to store the job id with user.
 declare -A JOB_USER                               # Associative array to store the job user in each node`
 declare -A JOB_TIME_M                             # Associative array to store the month of the job in each node`
 declare -A JOB_TIME_D                             # Associative array to store the day   of the job in each node`
 declare -A JOB_TIME_T                             # Associative array to store the time  of the job in each node`
-WANTED=('name' 'state' 'properties' 'jobs' 'np')  # Wanted properties from the xml file.
+WANTED=('name' 'state' 'properties' 'jobs' 'np' 'status')  # Wanted properties from the xml file.
 WANTED_SPACE=(10 27 20 22 16)                     # Wanted properties print space.
 WANTED_VAL=()                                     # A temporary array to store the values from xml file.
 N_WANTED=${#WANTED[@]}                            # Length of the wanted array.
@@ -66,7 +67,7 @@ display_help() {
     echo "-f         : Only display the free nodes."
     echo "-o         : Only display the offline nodes."
     echo "-s <jobID> : Only display the specific job id."
-    echo "* The following can only work on 'eureka00'."
+    echo "* The following can only work on login node."
     echo "-a         : Equivalent to the options of 'ijt'."
     echo "-i         : Display the idle users at the bottom."
     echo "-j         : Display with the job ID and the job users of each node."
@@ -103,9 +104,10 @@ read_dom () {
 
 sep_string () {
     # Separate the string by comma(,) symbol.
-    local IFS=","
+    local IFS=", "
     read -ra OUT <<< $1
-    echo ${OUT[*]}
+    #echo ${OUT[*]}
+    echo ${OUT[@]}
 }
 
 print_name () {
@@ -193,12 +195,12 @@ while getopts ":hvadfijtoqu:s:l:" option; do
             exit
             ;;
         v) # display version
-            echo "CheckNode 1.0.0"
+            echo "CheckNode 1.1.0"
             exit
             ;;
         a) # print all details
-            if [[ $HOST != 'eureka00' ]] ; then
-                printf ${RED}"ERROR: The option 'a' is only supported on eureka00.\n"${WHITE}
+            if [[ $NODE_ID != '00' ]] ; then
+                printf ${RED}"ERROR: The option 'a' is only supported on login node.\n"${WHITE}
             else
                 PRINT_JOB=true
                 PRINT_IDLE=true
@@ -215,36 +217,36 @@ while getopts ":hvadfijtoqu:s:l:" option; do
             PRINT_OFF=true
             ;;
         i) # print the idle user jobs
-            if [[ $HOST != 'eureka00' ]] ; then
-                printf ${RED}"ERROR: The option 'i' is only supported on eureka00.\n"${WHITE}
+            if [[ $NODE_ID != '00' ]] ; then
+                printf ${RED}"ERROR: The option 'i' is only supported on login node.\n"${WHITE}
             else
                 PRINT_IDLE=true
             fi
             ;;
         j) # print the jobs of each node 
-            if [[ $HOST != 'eureka00' ]] ; then
-                printf ${RED}"ERROR: The option 'j' is only supported on eureka00.\n"${WHITE}
+            if [[ $NODE_ID != '00' ]] ; then
+                printf ${RED}"ERROR: The option 'j' is only supported on login node.\n"${WHITE}
             else
                 PRINT_JOB=true
             fi
             ;;
         t) # print the start time
-            if [[ $HOST != 'eureka00' ]] ; then
-                printf ${RED}"ERROR: The option 't' is only supported on eureka00.\n"${WHITE}
+            if [[ $NODE_ID != '00' ]] ; then
+                printf ${RED}"ERROR: The option 't' is only supported on login node.\n"${WHITE}
             else
                 PRINT_TIME=true
             fi
             ;;
         q) # print the original showq
-            if [[ $HOST != 'eureka00' ]] ; then
-                printf ${RED}"ERROR: The option 'q' is only supported on eureka00.\n"${WHITE}
+            if [[ $NODE_ID != '00' ]] ; then
+                printf ${RED}"ERROR: The option 'q' is only supported on login node.\n"${WHITE}
             else
                 PRINT_SHOWQ=true
             fi
             ;;
         u) # select sepcific user
-            if [[ $HOST != 'eureka00' ]] ; then
-                printf ${RED}"ERROR: The option 'u' is only supported on eureka00.\n"${WHITE}
+            if [[ $NODE_ID != '00' ]] ; then
+                printf ${RED}"ERROR: The option 'u' is only supported on login node.\n"${WHITE}
             else
                 PRINT_SEL_USER=true
                 SEL_USER="$OPTARG"
@@ -294,11 +296,11 @@ fi
 # Prepare needed data
 #==============================================================================================================
 # Get the statisic of the cluster in xml style.
-pbsnodes -x > ${temp_stat}
+if ! $DEBUG ; then pbsnodes -x > ${temp_stat} ; fi
 
 if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME || $PRINT_SEL_USER ; then
     # Get the current job list
-    showq > ${temp_list}
+    if ! $DEBUG ; then showq > ${temp_list} ; fi
 
     # only print the showq message
     if $PRINT_SHOWQ ; then 
@@ -356,6 +358,9 @@ while read_dom; do
     if [[ $ENTITY = "/Node" ]] ; then
         # separate the node status
         STAT=`sep_string ${WANTED_VAL[1]}`
+        
+        #The message on the cluster
+        MSG=`awk -F',' '{ for( i=1; i<=NF; i++ ) print $i }' <<<"${WANTED_VAL[5]}" | grep message`
         
         # only print the selected status
         if $PRINT_FREE || $PRINT_DOWN || $PRINT_OFF; then 
@@ -430,7 +435,8 @@ while read_dom; do
         # 4. print user, job id, and time
         if $PRINT_JOB || $PRINT_TIME ; then
             if [[ ${#JOB_USER[@]} = "0" ]] ; then
-                printf "%-1s" $BLANK
+                if $PRINT_JOB  ; then printf "%-23s" $BLANK ; fi
+                if $PRINT_TIME ; then printf "%-16s" $BLANK ; fi
             else
                 PRINTED=false
                 for i in "${!JOB_USER[@]}"
@@ -446,6 +452,9 @@ while read_dom; do
                 done
             fi
         fi    # if $PRINT_JOB || $PRINT_TIME
+        
+        # print out the message on the cluster
+        printf ${RED}"${MSG}"${WHITE}
 
         printf "\n"
         

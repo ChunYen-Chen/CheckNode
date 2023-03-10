@@ -17,7 +17,7 @@
 * `-o`         : Only list the offline nodes.
 * `-s <jobId>` : Only display the specific job id.
 
-The followings can only work on eureka00.
+The followings can only work on login node.
 
 * `-i`         : List the idle users.
 * `-j`         : List the job ID and job user of each node.
