@@ -14,6 +14,7 @@
 HOST=`hostname`
 USER=`whoami`
 NODE_ID=${HOST:(-2)}
+CLUSTER=${HOST::(-2)}
 declare -A NODE_COUNT                             # Associative array to store the number of labels of the nodes.
 declare -A JOB_LIST                               # Associative array to store the job id with user.
 declare -A JOB_USER                               # Associative array to store the job user in each node`
@@ -382,7 +383,7 @@ while read_dom; do
         for i in "${!temp[@]}"
         do
             temp2="${temp[$i]#*/}"
-            JOB_ID="${temp2%.eureka*}"
+            JOB_ID="${temp2%.$CLUSTER*}"
             ((JOB_USER[${JOB_ID}]+=1))
             ((N_PROC-=1))
         done

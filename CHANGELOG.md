@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+## [1.1.1] - 2023-04-28
+
+### Fixed
+- Fix the counting number of free of procressors.
+
 
 ## [1.1.0] - 2023-03-10
 
