@@ -26,6 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+
+## [1.2.0] - 2023-07-26
+
+### Added
+- Now can show the blocked jobs.
+
+
 ## [1.1.1] - 2023-04-28
 
 ### Fixed

@@ -69,8 +69,9 @@ display_help() {
     echo "-o         : Only display the offline nodes."
     echo "-s <jobID> : Only display the specific job id."
     echo "* The following can only work on login node."
-    echo "-a         : Equivalent to the options of 'ijt'."
+    echo "-a         : Equivalent to the options of 'bijt'."
     echo "-i         : Display the idle users at the bottom."
+    echo "-b         : Display the blocked users at the bottom."
     echo "-j         : Display with the job ID and the job users of each node."
     echo "-q         : Display the message from 'showq'."
     echo "-t         : Display with the starting time information."
@@ -181,6 +182,7 @@ PRINT_OFF=false                           # Option "o": print the offline nodes
 PRINT_SHOWQ=false                         # Option "q": print the "showq"
 PRINT_JOB=false                           # Option "j": print the job ID and the job user
 PRINT_IDLE=false                          # Option "i": print the idle users
+PRINT_BLOCK=false                         # Option "b": print the blocked users
 PRINT_TIME=false                          # Option "t": print the time of each job
 PRINT_SEL_ID=false                        # Option "s": print the selected id
 PRINT_SEL_USER=false                      # Option "u": print the selected user
@@ -188,7 +190,7 @@ PRINT_SEL_LABEL=false                     # Option "l": print the selected label
 
 
 # Get the options
-while getopts ":hvadfijtoqu:s:l:" option; do
+while getopts ":hvadfoibjtqu:s:l:" option; do
 
     case $option in
         h) # display Help
@@ -205,6 +207,7 @@ while getopts ":hvadfijtoqu:s:l:" option; do
             else
                 PRINT_JOB=true
                 PRINT_IDLE=true
+                PRINT_BLOCK=true
                 PRINT_TIME=true
             fi
             ;;
@@ -222,6 +225,13 @@ while getopts ":hvadfijtoqu:s:l:" option; do
                 printf ${RED}"ERROR: The option 'i' is only supported on login node.\n"${WHITE}
             else
                 PRINT_IDLE=true
+            fi
+            ;;
+        b) # print the blocked user jobs
+            if [[ $NODE_ID != '00' ]] ; then
+                printf ${RED}"ERROR: The option 'b' is only supported on login node.\n"${WHITE}
+            else
+                PRINT_BLOCK=true
             fi
             ;;
         j) # print the jobs of each node
@@ -316,6 +326,7 @@ if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME || $PRINT_SEL_USER ;
     temp=($temp)
     N_jobs_active=${temp[5]}
     N_jobs_idle=${temp[8]}
+    N_jobs_block=${temp[11]}
 
     for ((i=4; i<4+$N_jobs_active; i++))
     do
@@ -512,7 +523,34 @@ if $PRINT_IDLE ; then
     done
 fi   # if $PRINT_IDLE
 
+# Print the blocked jobs
+if $PRINT_BLOCK ; then
+    print_separate_line $PRINT_LENGTH
+    printf "Blocked User    JobID  Proc "
+    if $PRINT_TIME ; then printf "Start time "; fi
+    printf "\n"
+    print_separate_line $PRINT_LENGTH
+
+    for ((i=17+$N_jobs_active+$N_jobs_idle; i<17+$N_jobs_active+$N_jobs_idle+$N_jobs_block; i++))
+    do
+      job=`sed "${i}q;d" ${temp_list}`
+      job=($job)
+      ID=(${job[0]})
+      NAME=(${job[1]})
+      PROC=(${job[3]})
+      MONTH=(${job[6]})
+      DAY=(${job[7]})
+      TIME=(${job[8]})
+
+      if $PRINT_SEL_USER && [[ $SEL_USER != $NAME ]] ; then continue ; fi
+      if $PRINT_SEL_ID   && [[ $SEL_ID   != $ID   ]] ; then continue ; fi
+      printf "%-15s %-6s %-4s " $NAME $ID $PROC
+      if $PRINT_TIME ; then printf "%-3s %-2s %-10s " $MONTH $DAY $TIME ; fi
+      printf "\n"
+
+    done
+fi   # if $PRINT_BLOCK
+
 clean_exit
 #exec 3>&-
 #exec 5>&-
-
