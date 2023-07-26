@@ -2,7 +2,7 @@
 # This is the simple code for getting the cluster information without root.
 #
 # Source code : https://github.com/ChunYen-Chen/CheckNode
-# Version     : 1.1.1
+# Version     : 1.2.0
 #
 #==============================================================================================================
 
