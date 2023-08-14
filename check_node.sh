@@ -2,7 +2,7 @@
 # This is the simple code for getting the cluster information without root.
 #
 # Source code : https://github.com/ChunYen-Chen/CheckNode
-# Version     : 1.2.0
+# Version     : 1.2.1
 #
 #==============================================================================================================
 
@@ -29,6 +29,7 @@ BLANK=""
 BASE_LENGTH=$(( ${WANTED_SPACE[0]} + ${WANTED_SPACE[1]} + ${WANTED_SPACE[2]} ))
 PRINT_LENGTH=$BASE_LENGTH
 DEBUG=false
+DOWN_NODE=()
 
 
 
@@ -86,6 +87,7 @@ display_help() {
 
 clean_exit () {
     # Remove the temporary files then exit
+    if $DEBUG ; then exit ; fi
     rm "${temp_list}"
     rm "${temp_stat}"
     exit
@@ -198,7 +200,7 @@ while getopts ":hvadfoibjtqu:s:l:" option; do
             exit
             ;;
         v) # display version
-            echo "CheckNode 1.1.1"
+            echo "CheckNode 1.2.1"
             exit
             ;;
         a) # print all details
@@ -371,6 +373,16 @@ while read_dom; do
         # separate the node status
         STAT=`sep_string ${WANTED_VAL[1]}`
 
+        # check if the node is down
+        down=0
+        for name in $STAT
+        do
+            if [[ $name == "down" ]]; then ((down+=1)); fi
+            if [[ $name == "offline" ]]; then ((down-=1)); fi
+            if [[ ${WANTED_VAL[0]} == "${CLUSTER}00" ]]; then ((down-=1)); fi
+        done
+        if [[ $down -eq 1 ]]; then DOWN_NODE+=(${WANTED_VAL[0]}); fi
+
         #The message on the cluster
         MSG=`awk -F',' '{ for( i=1; i<=NF; i++ ) print $i }' <<<"${WANTED_VAL[5]}" | grep message`
 
@@ -383,6 +395,9 @@ while read_dom; do
                 if $PRINT_DOWN && [[ $name == "down" ]] ; then PRINT=true ; fi
                 if $PRINT_OFF  && [[ $name == "offline" ]] ; then PRINT=true ; fi
             done
+
+            # record the down node
+            if $down ; then DOWN_NODE+=(${WANTED_VAL[0]}); fi
 
             if ! $PRINT ; then clean_array ; continue ; fi
 
@@ -550,6 +565,20 @@ if $PRINT_BLOCK ; then
 
     done
 fi   # if $PRINT_BLOCK
+
+# Print out the down nodes
+if [[ ${#DOWN_NODE[@]} -ne 0 ]]; then
+    down_msg=""
+
+    for node in "${DOWN_NODE[@]}"
+    do
+        down_msg="${down_msg}${node} "
+    done
+
+    printf "The node(s): "
+    echo -e -n "\033[5;7m${down_msg:0:-1}\033[0m"
+    printf " is(are) down. Please inform Wei-Hsuan Tzeng or send a message to slack.\n"
+fi
 
 clean_exit
 #exec 3>&-
