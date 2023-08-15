@@ -2,7 +2,7 @@
 # This is the simple code for getting the cluster information without root.
 #
 # Source code : https://github.com/ChunYen-Chen/CheckNode
-# Version     : 1.2.1
+# Version     : 1.2.2
 #
 #==============================================================================================================
 
@@ -200,7 +200,7 @@ while getopts ":hvadfoibjtqu:s:l:" option; do
             exit
             ;;
         v) # display version
-            echo "CheckNode 1.2.1"
+            echo "CheckNode 1.2.2"
             exit
             ;;
         a) # print all details
@@ -395,9 +395,6 @@ while read_dom; do
                 if $PRINT_DOWN && [[ $name == "down" ]] ; then PRINT=true ; fi
                 if $PRINT_OFF  && [[ $name == "offline" ]] ; then PRINT=true ; fi
             done
-
-            # record the down node
-            if $down ; then DOWN_NODE+=(${WANTED_VAL[0]}); fi
 
             if ! $PRINT ; then clean_array ; continue ; fi
 
