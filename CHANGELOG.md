@@ -27,7 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nothing yet
 
 
-## [1.2.1] - 2023-08-15
+## [1.2.3] - 2023-08-15
+
+### Added
+- Added `#!/bin/bash` on the top of the script.
+
+
+## [1.2.2] - 2023-08-15
 
 ### Fixed
 - Fixed showing wrong message of -f option.

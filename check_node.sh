@@ -1,8 +1,9 @@
+#!/bin/bash
 #==============================================================================================================
 # This is the simple code for getting the cluster information without root.
 #
 # Source code : https://github.com/ChunYen-Chen/CheckNode
-# Version     : 1.2.2
+# Version     : 1.2.3
 #
 #==============================================================================================================
 
@@ -200,7 +201,7 @@ while getopts ":hvadfoibjtqu:s:l:" option; do
             exit
             ;;
         v) # display version
-            echo "CheckNode 1.2.2"
+            echo "CheckNode 1.2.3"
             exit
             ;;
         a) # print all details
