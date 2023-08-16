@@ -318,7 +318,7 @@ if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_BLOCK || $PRINT_TIME || $
 
     # only print the showq message
     if $PRINT_SHOWQ ; then
-        if $PRINT_FREE || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
+        if $PRINT_FREE || $PRINT_JOB || $PRINT_IDLE || $PRINT_BLOCK || $PRINT_TIME ; then
             printf ${RED}"WARNING: We will only print out the content of 'showq'.\n"${WHITE}
         fi
         cat ${temp_list}
