@@ -3,7 +3,7 @@
 # This is the simple code for getting the cluster information without root.
 #
 # Source code : https://github.com/ChunYen-Chen/CheckNode
-# Version     : 1.2.3
+# Version     : 1.2.4
 #
 #==============================================================================================================
 
@@ -201,7 +201,7 @@ while getopts ":hvadfoibjtqu:s:l:" option; do
             exit
             ;;
         v) # display version
-            echo "CheckNode 1.2.3"
+            echo "CheckNode 1.2.4"
             exit
             ;;
         a) # print all details
@@ -312,7 +312,7 @@ fi
 # Get the statisic of the cluster in xml style.
 if ! $DEBUG ; then pbsnodes -x > ${temp_stat} ; fi
 
-if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME || $PRINT_SEL_USER ; then
+if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_BLOCK || $PRINT_TIME || $PRINT_SEL_USER ; then
     # Get the current job list
     if ! $DEBUG ; then showq > ${temp_list} ; fi
 

@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nothing yet
 
 
+## [1.2.4] - 2023-08-16
+
+### Fixed
+- Fix the error of `-b` option only.
+
+
 ## [1.2.3] - 2023-08-15
 
 ### Added
