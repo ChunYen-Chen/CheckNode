@@ -3,7 +3,7 @@
 2. Run the command `source ~/.bashrc`.
 
 # Usage
-`sh checknode.sh [-a|f|h|i|j|q|t]`
+`sh checknode.sh [-h|v|a|d|f|o|i|b|j|t|q|u] [-s user] [-l label]`
 
 # Examples
 1. `sh checknode.sh -f`
@@ -19,16 +19,17 @@
 
 The followings can only work on login node.
 
+* `-b`         : List the blocked users.
 * `-i`         : List the idle users.
 * `-j`         : List the job ID and job user of each node.
 * `-t`         : List the start time of each job.
-* `-a`         : List the content with option `i`, `j`, and `t`.
+* `-a`         : List the content with option `b`, `i`, `j`, and `t`.
 * `-q`         : List the "showq" content.
 * `-u <user>`  : Only display the specific user.
 * `-l <label>` : Only display the specific user.
 
 
 # Note
-1. The option `q` does not work with other options. 
+1. The option `q` does not work with other options.
 2. The default `.bashrc` file location is under `~/` or `/home/<USER>/`.
 3. The order of the options does not matter. e.g. 'ij' is equivalent to 'ji'.

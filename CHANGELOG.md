@@ -27,6 +27,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nothing yet
 
 
+## [1.2.4] - 2023-08-16
+
+### Fixed
+- Fix the error of `-b` option only.
+
+
+## [1.2.3] - 2023-08-15
+
+### Added
+- Added `#!/bin/bash` on the top of the script.
+
+
+## [1.2.2] - 2023-08-15
+
+### Fixed
+- Fixed showing wrong message of -f option.
+
+
+## [1.2.1] - 2023-08-14
+
+### Added
+- Always showing the down node at the bottom.
+
+
+## [1.2.0] - 2023-07-26
+
+### Added
+- Now can show the blocked jobs.
+
+
+## [1.1.1] - 2023-04-28
+
+### Fixed
+- Fix the counting number of free of procressors.
+
+
 ## [1.1.0] - 2023-03-10
 
 ### Added

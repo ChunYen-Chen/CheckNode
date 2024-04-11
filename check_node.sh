@@ -1,8 +1,9 @@
+#!/bin/bash
 #==============================================================================================================
-# This is the simple code for getting the cluster information without root. 
+# This is the simple code for getting the cluster information without root.
 #
 # Source code : https://github.com/ChunYen-Chen/CheckNode
-# Version     : 1.1.0
+# Version     : 1.2.4
 #
 #==============================================================================================================
 
@@ -14,6 +15,7 @@
 HOST=`hostname`
 USER=`whoami`
 NODE_ID=${HOST:(-2)}
+CLUSTER=${HOST::(-2)}
 declare -A NODE_COUNT                             # Associative array to store the number of labels of the nodes.
 declare -A JOB_LIST                               # Associative array to store the job id with user.
 declare -A JOB_USER                               # Associative array to store the job user in each node`
@@ -28,6 +30,7 @@ BLANK=""
 BASE_LENGTH=$(( ${WANTED_SPACE[0]} + ${WANTED_SPACE[1]} + ${WANTED_SPACE[2]} ))
 PRINT_LENGTH=$BASE_LENGTH
 DEBUG=false
+DOWN_NODE=()
 
 
 
@@ -52,14 +55,14 @@ WHITE='\033[39m'
 display_help() {
     # Help the user to use this script
     echo "The script to list the current cluster information of each node."
-    echo 
+    echo
     echo "Usage: sh checknode.sh [arguments]"
-    echo 
+    echo
     echo "Examples: "
     echo "1. sh checknode.sh -f"
     echo "2. sh checknode.sh -u chunyenc"
     echo "3. sh checknode.sh -ij"
-    echo 
+    echo
     echo "Arguements: "
     echo "-h         : Display the help messages."
     echo "-v         : Display the version."
@@ -68,22 +71,24 @@ display_help() {
     echo "-o         : Only display the offline nodes."
     echo "-s <jobID> : Only display the specific job id."
     echo "* The following can only work on login node."
-    echo "-a         : Equivalent to the options of 'ijt'."
+    echo "-a         : Equivalent to the options of 'bijt'."
     echo "-i         : Display the idle users at the bottom."
+    echo "-b         : Display the blocked users at the bottom."
     echo "-j         : Display with the job ID and the job users of each node."
     echo "-q         : Display the message from 'showq'."
     echo "-t         : Display with the starting time information."
     echo "-u <user>  : Only display the specific user."
     echo "-l <label> : Only display the specific node label."
-    echo 
+    echo
     echo "Note: "
     echo "1. The argument 'q' does not work with other arguments."
     echo "2. The order of the arguments does not matter. e.g. 'ij' is equivalent to 'ji'."
-    echo 
+    echo
 }
 
 clean_exit () {
     # Remove the temporary files then exit
+    if $DEBUG ; then exit ; fi
     rm "${temp_list}"
     rm "${temp_stat}"
     exit
@@ -91,7 +96,7 @@ clean_exit () {
 
 clean_array() {
     # Reset the arrays
-    WANTED_VAL=() 
+    WANTED_VAL=()
     unset JOB_USER
     declare -g JOB_USER
 }
@@ -119,7 +124,7 @@ print_status () {
     # $1 : the status string
     # $2 : the number of used processor
     # $3 : the number of total processor
-    
+
     OUT_STRING=$1
 
     if [[ $1 = "free" ]] ; then
@@ -180,6 +185,7 @@ PRINT_OFF=false                           # Option "o": print the offline nodes
 PRINT_SHOWQ=false                         # Option "q": print the "showq"
 PRINT_JOB=false                           # Option "j": print the job ID and the job user
 PRINT_IDLE=false                          # Option "i": print the idle users
+PRINT_BLOCK=false                         # Option "b": print the blocked users
 PRINT_TIME=false                          # Option "t": print the time of each job
 PRINT_SEL_ID=false                        # Option "s": print the selected id
 PRINT_SEL_USER=false                      # Option "u": print the selected user
@@ -187,7 +193,7 @@ PRINT_SEL_LABEL=false                     # Option "l": print the selected label
 
 
 # Get the options
-while getopts ":hvadfijtoqu:s:l:" option; do
+while getopts ":hvadfoibjtqu:s:l:" option; do
 
     case $option in
         h) # display Help
@@ -195,7 +201,7 @@ while getopts ":hvadfijtoqu:s:l:" option; do
             exit
             ;;
         v) # display version
-            echo "CheckNode 1.1.0"
+            echo "CheckNode 1.2.4"
             exit
             ;;
         a) # print all details
@@ -204,6 +210,7 @@ while getopts ":hvadfijtoqu:s:l:" option; do
             else
                 PRINT_JOB=true
                 PRINT_IDLE=true
+                PRINT_BLOCK=true
                 PRINT_TIME=true
             fi
             ;;
@@ -223,7 +230,14 @@ while getopts ":hvadfijtoqu:s:l:" option; do
                 PRINT_IDLE=true
             fi
             ;;
-        j) # print the jobs of each node 
+        b) # print the blocked user jobs
+            if [[ $NODE_ID != '00' ]] ; then
+                printf ${RED}"ERROR: The option 'b' is only supported on login node.\n"${WHITE}
+            else
+                PRINT_BLOCK=true
+            fi
+            ;;
+        j) # print the jobs of each node
             if [[ $NODE_ID != '00' ]] ; then
                 printf ${RED}"ERROR: The option 'j' is only supported on login node.\n"${WHITE}
             else
@@ -298,26 +312,27 @@ fi
 # Get the statisic of the cluster in xml style.
 if ! $DEBUG ; then pbsnodes -x > ${temp_stat} ; fi
 
-if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME || $PRINT_SEL_USER ; then
+if $PRINT_SHOWQ || $PRINT_JOB || $PRINT_IDLE || $PRINT_BLOCK || $PRINT_TIME || $PRINT_SEL_USER ; then
     # Get the current job list
     if ! $DEBUG ; then showq > ${temp_list} ; fi
 
     # only print the showq message
-    if $PRINT_SHOWQ ; then 
-        if $PRINT_FREE || $PRINT_JOB || $PRINT_IDLE || $PRINT_TIME ; then
+    if $PRINT_SHOWQ ; then
+        if $PRINT_FREE || $PRINT_JOB || $PRINT_IDLE || $PRINT_BLOCK || $PRINT_TIME ; then
             printf ${RED}"WARNING: We will only print out the content of 'showq'.\n"${WHITE}
         fi
         cat ${temp_list}
         clean_exit
     fi
-    
+
     temp=`tail -n 1 ${temp_list}`
     temp=($temp)
     N_jobs_active=${temp[5]}
     N_jobs_idle=${temp[8]}
-    
+    N_jobs_block=${temp[11]}
+
     for ((i=4; i<4+$N_jobs_active; i++))
-    do 
+    do
       job=`sed "${i}q;d" ${temp_list}`
       job=($job)
       ID=(${job[0]})
@@ -338,7 +353,7 @@ fi
 #==============================================================================================================
 # Main print
 #==============================================================================================================
-# Header of the node 
+# Header of the node
 print_separate_line $PRINT_LENGTH
 printf "Name      Status                     Label               "
 if $PRINT_JOB  ; then printf "User            JobID  " ; fi
@@ -350,30 +365,40 @@ print_separate_line $PRINT_LENGTH
 while read_dom; do
     # Store the node properties.
     for (( i=0; i<$N_WANTED; i++))
-    do 
+    do
         if [[ $ENTITY = ${WANTED[$i]} ]] ; then WANTED_VAL[$i]=$CONTENT ; fi
     done
-    
+
     # If it the end of the node properties, print out the messages of the node.
     if [[ $ENTITY = "/Node" ]] ; then
         # separate the node status
         STAT=`sep_string ${WANTED_VAL[1]}`
-        
+
+        # check if the node is down
+        down=0
+        for name in $STAT
+        do
+            if [[ $name == "down" ]]; then ((down+=1)); fi
+            if [[ $name == "offline" ]]; then ((down-=1)); fi
+            if [[ ${WANTED_VAL[0]} == "${CLUSTER}00" ]]; then ((down-=1)); fi
+        done
+        if [[ $down -eq 1 ]]; then DOWN_NODE+=(${WANTED_VAL[0]}); fi
+
         #The message on the cluster
         MSG=`awk -F',' '{ for( i=1; i<=NF; i++ ) print $i }' <<<"${WANTED_VAL[5]}" | grep message`
-        
+
         # only print the selected status
-        if $PRINT_FREE || $PRINT_DOWN || $PRINT_OFF; then 
+        if $PRINT_FREE || $PRINT_DOWN || $PRINT_OFF; then
             PRINT=false
             for name in $STAT
-            do 
+            do
                 if $PRINT_FREE && [[ $name == "free" ]] ; then PRINT=true ; fi
                 if $PRINT_DOWN && [[ $name == "down" ]] ; then PRINT=true ; fi
                 if $PRINT_OFF  && [[ $name == "offline" ]] ; then PRINT=true ; fi
             done
-            
+
             if ! $PRINT ; then clean_array ; continue ; fi
-            
+
         fi
 
         # count the number of jobs on the node and number of processor is free
@@ -382,47 +407,47 @@ while read_dom; do
         for i in "${!temp[@]}"
         do
             temp2="${temp[$i]#*/}"
-            JOB_ID="${temp2%.eureka*}"
+            JOB_ID="${temp2%.$CLUSTER*}"
             ((JOB_USER[${JOB_ID}]+=1))
             ((N_PROC-=1))
         done
-        
+
         # separate the node labels
         PROP=`sep_string ${WANTED_VAL[2]}`
 
         # only print the selected label
-        if $PRINT_SEL_LABEL ; then 
+        if $PRINT_SEL_LABEL ; then
             PRINT=false
             for name in $PROP
-            do 
+            do
                 if [[ $SEL_LABEL == $name ]] ; then PRINT=true ; fi
             done
-            
+
             if ! $PRINT ; then clean_array ; continue ; fi
-            
+
         fi
 
         # only print the selected user or job id
-        if $PRINT_SEL_ID ; then 
+        if $PRINT_SEL_ID ; then
             PRINT=false
             for i in "${!JOB_USER[@]}"
-            do 
+            do
                 if [[ "$SEL_ID" == "$i" ]] ; then PRINT=true ; fi
             done
 
             if ! $PRINT ; then clean_array ; continue ; fi
         fi
-        
-        if $PRINT_SEL_USER ; then 
+
+        if $PRINT_SEL_USER ; then
             PRINT=false
             for i in "${!JOB_USER[@]}"
-            do 
+            do
                 if [[ $SEL_USER == ${JOB_LIST[$i]} ]] ; then PRINT=true ; fi
             done
 
             if ! $PRINT ; then clean_array ; continue ; fi
         fi
-        
+
         # 1. node name
         print_name ${WANTED_VAL[0]}
 
@@ -431,7 +456,7 @@ while read_dom; do
 
         # 3. node labels
         print_labels ${WANTED_VAL[2]}
-        
+
         # 4. print user, job id, and time
         if $PRINT_JOB || $PRINT_TIME ; then
             if [[ ${#JOB_USER[@]} = "0" ]] ; then
@@ -452,20 +477,20 @@ while read_dom; do
                 done
             fi
         fi    # if $PRINT_JOB || $PRINT_TIME
-        
+
         # print out the message on the cluster
         printf ${RED}"${MSG}"${WHITE}
 
         printf "\n"
-        
+
         # count the number of labels.
         for name in $PROP ; do ((NODE_COUNT[$name]+=1)) ; done
-        
+
         # clear the array once it printed
         clean_array
 
     fi # if [[ $ENTITY = "/Node" ]] ; then
-    
+
     # Break the loop when it reach the end of the file.
     if [[ $ENTITY = "/Data" ]] ; then break ; fi
 
@@ -487,12 +512,12 @@ print_separate_line $PRINT_LENGTH
 if $PRINT_IDLE ; then
     print_separate_line $PRINT_LENGTH
     printf "Idle User       JobID  Proc "
-    if $PRINT_TIME ; then printf "Start time "; fi 
+    if $PRINT_TIME ; then printf "Start time "; fi
     printf "\n"
     print_separate_line $PRINT_LENGTH
-    
+
     for ((i=11+$N_jobs_active; i<11+$N_jobs_active+$N_jobs_idle; i++))
-    do 
+    do
       job=`sed "${i}q;d" ${temp_list}`
       job=($job)
       ID=(${job[0]})
@@ -507,11 +532,52 @@ if $PRINT_IDLE ; then
       printf "%-15s %-6s %-4s " $NAME $ID $PROC
       if $PRINT_TIME ; then printf "%-3s %-2s %-10s " $MONTH $DAY $TIME ; fi
       printf "\n"
-    
+
     done
 fi   # if $PRINT_IDLE
+
+# Print the blocked jobs
+if $PRINT_BLOCK ; then
+    print_separate_line $PRINT_LENGTH
+    printf "Blocked User    JobID  Proc "
+    if $PRINT_TIME ; then printf "Start time "; fi
+    printf "\n"
+    print_separate_line $PRINT_LENGTH
+
+    for ((i=17+$N_jobs_active+$N_jobs_idle; i<17+$N_jobs_active+$N_jobs_idle+$N_jobs_block; i++))
+    do
+      job=`sed "${i}q;d" ${temp_list}`
+      job=($job)
+      ID=(${job[0]})
+      NAME=(${job[1]})
+      PROC=(${job[3]})
+      MONTH=(${job[6]})
+      DAY=(${job[7]})
+      TIME=(${job[8]})
+
+      if $PRINT_SEL_USER && [[ $SEL_USER != $NAME ]] ; then continue ; fi
+      if $PRINT_SEL_ID   && [[ $SEL_ID   != $ID   ]] ; then continue ; fi
+      printf "%-15s %-6s %-4s " $NAME $ID $PROC
+      if $PRINT_TIME ; then printf "%-3s %-2s %-10s " $MONTH $DAY $TIME ; fi
+      printf "\n"
+
+    done
+fi   # if $PRINT_BLOCK
+
+# Print out the down nodes
+if [[ ${#DOWN_NODE[@]} -ne 0 ]]; then
+    down_msg=""
+
+    for node in "${DOWN_NODE[@]}"
+    do
+        down_msg="${down_msg}${node} "
+    done
+
+    printf "The node(s): "
+    echo -e -n "\033[5;7m${down_msg:0:-1}\033[0m"
+    printf " is(are) down. Please inform Wei-Hsuan Tzeng or send a message to slack.\n"
+fi
 
 clean_exit
 #exec 3>&-
 #exec 5>&-
-
