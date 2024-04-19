@@ -34,3 +34,9 @@ jobs:
           #sh test.sh
           echo "Done"
       - run: echo "NOTE This job's status is ${{ job.status }}."
+  wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bi-directional Wiki Sync Action
+        uses: newrelic/wiki-sync-action@v1.0.1
+            
