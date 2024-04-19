@@ -9,7 +9,7 @@ on:
 env:
   SOURCE: docs
   DESTINATION: wiki
-  TOKEN: ${{ secrets.CHECKNODEWIKI }}
+  GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.CHECKNODEWIKI }}
 
 jobs:
   test:
