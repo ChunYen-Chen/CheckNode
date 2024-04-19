@@ -6,11 +6,6 @@ on:
 #  schedule:
 #    - cron: "0 */8 * * *" # every 8 hour
 
-env:
-  SOURCE: docs
-  DESTINATION: wiki
-  GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.CHECKNODEWIKI }}
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -40,8 +35,3 @@ jobs:
           #sh test.sh
           echo "Done"
       - run: echo "NOTE This job's status is ${{ job.status }}."
-  wiki:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Bi-directional Wiki Sync Action
-        uses: newrelic/wiki-sync-action@v1.0.1
