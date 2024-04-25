@@ -8,6 +8,7 @@ on:
       - "wiki_docs/**"
   repository_dispatch:
     types: [wiki_docs]
+  workflow_dispatch:
   gollum:
 
 env:
