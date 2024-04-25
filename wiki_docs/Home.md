@@ -107,8 +107,15 @@
    * Click `New repository secrets`, and then you will see the following. Please fill `TOKEN_FOR_WIKI` in the `Name` and your personal access token in `Secret`. 
    ![image](https://github.com/ChunYen-Chen/CheckNode/assets/70311975/146c4c9e-4651-47e4-919d-a3e59484222a)
 
-1. Edit any file in the `wiki_docs` and push it to `branch_for_wiki`. Now, the wiki on the web should be the same as the code in the repo.
-   * TODO: Consider adding a workflow for this step.
+1. Enable the workflow to run in the forked repository.
+   * Click the green button.
+   ![image](https://github.com/ChunYen-Chen/CheckNode/assets/70311975/9e58d4a8-3248-4ceb-81ff-276a6943149d)
+
+1. Initialize wiki.
+   * If the `branch_for_wiki` is NOT forked, please add a new branch called `branch_for_wiki` and set the upstream properly. Once the `branch_for_wiki` is created, the wiki should also be updated.
+   * If the `branch_for_wiki` is forked, please run the workflow manually. Click `Action` > `Workflows` > `Documentation` > `Run workflow` > choose `Branch: branch_for_wiki` > `Run workflow`
+   ![image](https://github.com/ChunYen-Chen/CheckNode/assets/70311975/189376a2-c11f-4801-acc3-2656db6b31ef)
+
 1. Now, you may edit the wiki on the web or push the wiki content to the `branch_for_wiki`. The wiki will be updated for both sides.
 
 
