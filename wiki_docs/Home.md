@@ -113,7 +113,7 @@
 
 1. Initialize wiki.
    * If the `branch_for_wiki` is NOT forked, please add a new branch called `branch_for_wiki` and set the upstream properly. Once the `branch_for_wiki` is created, the wiki should also be updated.
-   * If the `branch_for_wiki` is forked, please run the workflow manually. Click `Action` > `Workflows` > `Documentation` > `Run workflow` > choose `Branch: branch_for_wiki` > `Run workflow`
+   * If the `branch_for_wiki` is forked, please run the workflow manually. Click `Action` > `Workflows` > `Documentation` > `Run workflow` > choose `Branch: branch_for_wiki` > `Run workflow`. Once the workflow is done, the wiki is also updated.
    ![image](https://github.com/ChunYen-Chen/CheckNode/assets/70311975/189376a2-c11f-4801-acc3-2656db6b31ef)
 
 1. Now, you may edit the wiki on the web or push the wiki content to the `branch_for_wiki`. The wiki will be updated for both sides.
