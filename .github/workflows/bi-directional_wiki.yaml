@@ -47,4 +47,4 @@ jobs:
           token: ${{ secrets.CHECKNODEWIKI }}
           gitAuthorName: ${{ env.GIT_AUTHOR_NAME }}
           gitAuthorEmail: ${{ env.GIT_AUTHOR_EMAIL }}
-          branch: master # since default branch is develop in this example
+          branch: wiki # since default branch is develop in this example
