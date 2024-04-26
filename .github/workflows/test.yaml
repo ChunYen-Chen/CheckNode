@@ -18,6 +18,7 @@ jobs:
       - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
       - run: |
                echo "${{ github.ref }}"
-               temp="${{ github.ref }}"
-               echo $temp | awk -F/ '{print $NF}'
+               temp=${{ github.ref }}
+               echo $temp
+               temp=`printf $temp | awk -F/ '{print $NF}'`
       - run: echo "${{ github.workflow_ref }}"
