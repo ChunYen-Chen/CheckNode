@@ -20,6 +20,7 @@ jobs:
                echo "${{ github.ref }}"
                temp=${{ github.ref }}
                echo $temp
-               temp=`printf $temp | awk -F/ '{print $NF}'`
-               echo $temp
+               branch=`printf $temp | awk -F/ '{print $NF}'`
+               echo $branch
+               echo ${{ github.ref_name }}
       - run: echo "${{ github.workflow_ref }}"
