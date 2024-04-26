@@ -16,6 +16,8 @@ jobs:
       - name: Test
         uses: actions/checkout@v2
       - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "${{ github.head_ref }}"
-      - run: echo "${{ github.ref##*/ }}"
+      - run: |
+               echo "${{ github.ref }}"
+               temp="${{ github.ref }}"
+               echo $temp | awk -F/ '{print $NF}'
       - run: echo "${{ github.workflow_ref }}"
