@@ -21,4 +21,5 @@ jobs:
                temp=${{ github.ref }}
                echo $temp
                temp=`printf $temp | awk -F/ '{print $NF}'`
+               echo $temp
       - run: echo "${{ github.workflow_ref }}"
