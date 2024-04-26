@@ -1,4 +1,4 @@
-name: Documentation
+name: Test branch
 
 on:
   repository_dispatch:
@@ -16,4 +16,4 @@ jobs:
       - name: Test
         uses: actions/checkout@v2
       - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "The job was is at ${{ github.GITHUB_REF }}."
+      - run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
