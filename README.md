@@ -12,8 +12,14 @@
 `sh checknode.sh [-h|v|a|d|f|o|i|b|j|t|q|u] [-s user] [-l label]`
 
 # Examples
-1. `sh checknode.sh -f`
-2. `sh checknode.sh -ij`
+1. Show the free nodes
+   ```shell
+   sh checknode.sh -f
+   ```
+1. Show the idle user, job ID, and job user of each node
+   ```shell
+   sh checknode.sh -ij
+   ```
 
 # Options
 * `-h`         : Display the help messages.
@@ -38,4 +44,4 @@ The followings can only work on login node.
 # Note
 1. The option `q` does not work with other options.
 2. The default `.bashrc` file location is under `~/` or `/home/<USER>/`.
-3. The order of the options does not matter. e.g. 'ij' is equivalent to 'ji'.
+3. The order of the options does not matter. e.g. `-ij` is equivalent to `-ji`.
