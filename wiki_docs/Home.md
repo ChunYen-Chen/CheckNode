@@ -104,12 +104,14 @@ The following is the outline of this document:
 
 1. **Create a token for the action bot**
    * `Setting` of your account > `Developer setting` > `Personal access tokens` > `Generate new token`
+   * Please check the `repo` and the `workflow` options.
 
    ![image](https://github.com/ChunYen-Chen/CheckNode/assets/70311975/5e19015d-5ebb-46b6-9a7c-eb3fff298527)
 
+   * Remember to save the token since it will only be shown once!
+
 1. **Create a repository secret token**
    * Go to `Setting` of the repository > `Security` > `Secrets and variables` > `Actions` > `Repository secrets`
-   * Please check the `repo` and the `workflow` options.
    
    ![image](https://github.com/ChunYen-Chen/CheckNode/assets/70311975/1e7a7a4e-924f-442d-8f96-d48e4f1dc783)
 
