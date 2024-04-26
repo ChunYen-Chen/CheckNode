@@ -1,15 +1,15 @@
 name: Documentation
 
 on:
-  push:
-    branches:
-      - branch_for_wiki
-    paths:
-      - "wiki_docs/**"
-  repository_dispatch:
-    types: [wiki_docs]
+  #push:
+  #  branches:
+  #    - branch_for_wiki
+  #  paths:
+  #    - "wiki_docs/**"
+  #repository_dispatch:
+  #  types: [wiki_docs]
   workflow_dispatch:
-  gollum:
+  #gollum:
 
 env:
   GIT_AUTHOR_NAME: Actionbot
