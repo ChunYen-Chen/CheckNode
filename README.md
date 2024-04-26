@@ -1,6 +1,12 @@
 # First time
-1. Setup by command `sh setup.sh`.
-2. Run the command `source ~/.bashrc`.
+1. **Setup the code**
+   ```shell
+   sh setup.sh
+   ```
+1. **Source `.bashrc`**
+   ```shell
+   source ~/.bashrc
+   ```
 
 # Usage
 `sh checknode.sh [-h|v|a|d|f|o|i|b|j|t|q|u] [-s user] [-l label]`
